@@ -94,6 +94,39 @@ class Yourls:
 
         return j
 
+    def update(self, url, keyword=None):
+        """
+        Updates the given keyword with a new URL.
+
+        :param url: required, string. URL to be shortened.
+        :param keyword: string. Custom alias for the URL
+        :return: dictionary. Full JSON response from the API, parsed into a dict
+
+        :raises: pyourls3.exceptions.Pyourls3ParamError, pyourls3.exceptions.Pyourls3HTTPError,
+          pyourls3.exceptions.Pyourls3APIError
+        """
+
+        if not url:
+            raise exceptions.Pyourls3ParamError("url")
+
+        specific_args = {"action": "update", "shorturl": url, "url": keyword}
+
+
+        r = requests.post(self.api_endpoint, data={**self.global_args, **specific_args})
+        print(specific_args)
+        try:
+            j = r.json()
+        except json.decoder.JSONDecodeError:
+            raise exceptions.Pyourls3HTTPError(r.status_code, self.api_endpoint)
+
+        if not j["status"] == "success":
+            if j["code"] == "error:url":
+                raise exceptions.Pyourls3URLAlreadyExistsError(url)
+            else:
+                raise exceptions.Pyourls3APIError(j["message"], j["code"])
+
+        return j
+
     def expand(self, url):
         """
         Expands a specified URL or alias into it's full form.
