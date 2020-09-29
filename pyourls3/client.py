@@ -137,6 +137,25 @@ class Yourls:
 
         return j["stats"]
 
+    def delete(self, keyword):
+        """
+        Deletes the link with the given keyword
+
+        :param url: required, string. URL or alias of target redirect.
+
+        """
+
+        if not keyword:
+            raise exceptions.Pyourls3ParamError("url")
+
+        specific_args = {"action": "delete", "shorturl": keyword}
+
+        r = requests.post(self.api_endpoint, data={**self.global_args, **specific_args})
+        if r.status_code == 200:
+            return True
+        else:
+            raise exceptions.Pyourls3HTTPError(r.status_code, self.api_endpoint)
+
     def url_stats(self, url):
         """
         Detailed stats about a specifc URL or alias.
